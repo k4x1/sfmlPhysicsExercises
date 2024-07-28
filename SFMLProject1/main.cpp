@@ -85,8 +85,8 @@ int main()
                     bLinePlaced = true;
                 } 
                 else if (!bPlanePlaced){
-                    sf::Vector2f PlaneDirection(CurrentLine.end.position - CurrentLine.start.position);
-                    sf::Vector2f PlaneNormal(PlaneDirection);
+                    sf::Vector2f PlaneDirection(CurrentLine.start.position - CurrentLine.end.position);
+                    sf::Vector2f PlaneNormal(-PlaneDirection.y, PlaneDirection.x);
                     PlaneNormal = Normalize(PlaneNormal);
                     CurrentPlane.normal = PlaneNormal;
                     CurrentPlane.pointOnPlane = CurrentLine.start.position;
