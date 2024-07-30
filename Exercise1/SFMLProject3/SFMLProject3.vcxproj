@@ -21,10 +21,10 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{EFC22825-ABCC-45BA-B8AA-54C76B0AEFE4}</ProjectGuid>
+    <ProjectGuid>{301146DF-87B9-424F-B7CD-B6A67DCBC77B}</ProjectGuid>
     <RootNamespace>SFMLSetup</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Ex1_1</ProjectName>
+    <ProjectName>Ex1</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
