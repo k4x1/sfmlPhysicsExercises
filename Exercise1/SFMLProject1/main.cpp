@@ -1,3 +1,4 @@
+
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <cmath>
@@ -10,7 +11,7 @@ sf::Vector2f Normalize(sf::Vector2f _vector) {
 struct Plane {
     Plane() : pointOnPlane(), normal(), bPointPlaced(false), bPlanePlaced(false) {}
 
-    Plane(sf::Vector2f _pointOnPlane, sf::Vector2f _normal) 
+    Plane(sf::Vector2f _pointOnPlane, sf::Vector2f _normal)
         : pointOnPlane(_pointOnPlane), normal(_normal), bPointPlaced(false), bPlanePlaced(false) {}
 
     void placePlane(sf::RenderWindow& window, sf::Event& event) {
@@ -19,7 +20,8 @@ struct Plane {
                 pointOnPlane.x = sf::Mouse::getPosition(window).x;
                 pointOnPlane.y = sf::Mouse::getPosition(window).y;
                 bPointPlaced = true;
-            } else if (!bPlanePlaced) {
+            }
+            else if (!bPlanePlaced) {
                 sf::Vector2f planeDirection = sf::Vector2f(sf::Mouse::getPosition(window)) - pointOnPlane;
                 sf::Vector2f planeNormal(-planeDirection.y, planeDirection.x);
                 normal = Normalize(planeNormal);
@@ -48,7 +50,7 @@ struct Plane {
 struct LineSegment {
     LineSegment() : start(), end(), bStartPlaced(false), bEndPlaced(false) {}
 
-    LineSegment(sf::Vertex _start, sf::Vertex _end) 
+    LineSegment(sf::Vertex _start, sf::Vertex _end)
         : start(_start), end(_end), bStartPlaced(false), bEndPlaced(false) {}
 
     void placeLine(sf::RenderWindow& window, sf::Event& event) {
@@ -57,7 +59,8 @@ struct LineSegment {
                 start.position.x = sf::Mouse::getPosition(window).x;
                 start.position.y = sf::Mouse::getPosition(window).y;
                 bStartPlaced = true;
-            } else if (!bEndPlaced) {
+            }
+            else if (!bEndPlaced) {
                 end.position.x = sf::Mouse::getPosition(window).x;
                 end.position.y = sf::Mouse::getPosition(window).y;
                 bEndPlaced = true;
@@ -96,26 +99,28 @@ int main() {
         sf::Event event;
         while (window.pollEvent(event)) {
             switch (event.type) {
-                case sf::Event::Closed:
-                    window.close();
-                    break;
-                case sf::Event::MouseButtonPressed:
-                    if (!CurrentLine.bStartPlaced || !CurrentLine.bEndPlaced) {
-                        CurrentLine.placeLine(window, event);
-                    } else if (!CurrentPlane.bPointPlaced || !CurrentPlane.bPlanePlaced) {
-                        CurrentPlane.placePlane(window, event);
-                        if (CurrentPlane.bPlanePlaced) {
-                            // Check for collision
-                            bCollisionChecked = true;
-                            bool collision = LineSegmentIntersectsPlane(CurrentLine, CurrentPlane);
-                            if (collision) {
-                                std::cout << "Collision" << std::endl;
-                            } else {
-                                std::cout << "No Collision" << std::endl;
-                            }
+            case sf::Event::Closed:
+                window.close();
+                break;
+            case sf::Event::MouseButtonPressed:
+                if (!CurrentLine.bStartPlaced || !CurrentLine.bEndPlaced) {
+                    CurrentLine.placeLine(window, event);
+                }
+                else if (!CurrentPlane.bPointPlaced || !CurrentPlane.bPlanePlaced) {
+                    CurrentPlane.placePlane(window, event);
+                    if (CurrentPlane.bPlanePlaced) {
+                        // Check for collision
+                        bCollisionChecked = true;
+                        bool collision = LineSegmentIntersectsPlane(CurrentLine, CurrentPlane);
+                        if (collision) {
+                            std::cout << "Collision" << std::endl;
+                        }
+                        else {
+                            std::cout << "No Collision" << std::endl;
                         }
                     }
-                    break;
+                }
+                break;
             }
         }
 

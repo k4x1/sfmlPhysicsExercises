@@ -7,11 +7,20 @@ struct Point {
     bool placed = false;
 };
 
+float DotProduct(sf::Vector2f _vector1, sf::Vector2f _vector2) {
+    return (_vector1.x * _vector2.x) + (_vector1.y * _vector2.y);
+}
+
 sf::Vector2f Normalize(sf::Vector2f _vector) {
     float Magnitude = sqrt((_vector.x * _vector.x) + (_vector.y * _vector.y));
     return sf::Vector2f(_vector.x / Magnitude, _vector.y / Magnitude);
 }
 
+sf::Vector2f LinePlaneIntersection(sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f planePoint, sf::Vector2f planeNormal) {
+    sf::Vector2f lineDir = p2 - p1;
+    float t = DotProduct(planeNormal, planePoint - p1) / DotProduct(planeNormal, lineDir);
+    return p1 + lineDir * t;
+}
 class Plane {
 public:
     Plane() : pointOnPlane(), normal(), bPointPlaced(false), bPlanePlaced(false) {}
@@ -87,7 +96,7 @@ public:
             if (points[i].placed) {
                 sf::CircleShape circle(5);
                 circle.setFillColor(sf::Color::Green);
-                circle.setPosition(points[i].vert.position - sf::Vector2f(5, 5)); // Center the circle on the point
+                circle.setPosition(points[i].vert.position - sf::Vector2f(5, 5)); 
                 window.draw(circle);
             }
         }
@@ -104,11 +113,7 @@ public:
     bool bTrianglePlaced;
 };
 
-float DotProduct(sf::Vector2f _vector1, sf::Vector2f _vector2) {
-    return (_vector1.x * _vector2.x) + (_vector1.y * _vector2.y);
-}
-
-bool TriangleIntersectsPlane(Triangle triangle, Plane plane) {
+bool TriangleIntersectsPlane(Triangle triangle, Plane plane, std::vector<sf::Vector2f>& intersectionPoints) {
     int positive = 0, negative = 0;
     for (int i = 0; i < 3; ++i) {
         float dot = DotProduct(triangle.points[i].vert.position - plane.pointOnPlane, plane.normal);
@@ -119,7 +124,21 @@ bool TriangleIntersectsPlane(Triangle triangle, Plane plane) {
             negative++;
         }
     }
-    return positive > 0 && negative > 0;
+
+    if (positive > 0 && negative > 0) {
+        for (int i = 0; i < 3; ++i) {
+            sf::Vector2f p1 = triangle.points[i].vert.position;
+            sf::Vector2f p2 = triangle.points[(i + 1) % 3].vert.position;
+            float dot1 = DotProduct(p1 - plane.pointOnPlane, plane.normal);
+            float dot2 = DotProduct(p2 - plane.pointOnPlane, plane.normal);
+
+            if (dot1 * dot2 < 0) {
+                intersectionPoints.push_back(LinePlaneIntersection(p1, p2, plane.pointOnPlane, plane.normal));
+            }
+        }
+        return true;
+    }
+    return false;
 }
 
 int main() {
@@ -129,6 +148,7 @@ int main() {
     Triangle CurrentTriangle;
 
     bool bCollisionChecked = false;
+    std::vector<sf::Vector2f> intersectionPoints;
 
     while (window.isOpen()) {
         sf::Event event;
@@ -145,7 +165,8 @@ int main() {
                     CurrentTriangle.placeTriangle(window, event);
                     if (CurrentTriangle.bTrianglePlaced) {
                         bCollisionChecked = true;
-                        bool collision = TriangleIntersectsPlane(CurrentTriangle, CurrentPlane);
+                        intersectionPoints.clear();
+                        bool collision = TriangleIntersectsPlane(CurrentTriangle, CurrentPlane, intersectionPoints);
                         if (collision) {
                             std::cout << "Collision" << std::endl;
                         }
@@ -160,6 +181,7 @@ int main() {
                     CurrentPlane.reset();
                     CurrentTriangle.reset();
                     bCollisionChecked = false;
+                    intersectionPoints.clear();
                     window.clear();
                 }
                 break;
@@ -188,6 +210,19 @@ int main() {
 
         CurrentTriangle.drawPoints(window);
         CurrentPlane.drawPlane(window);
+
+        if (bCollisionChecked && intersectionPoints.size() == 2) {
+            sf::Vector2f midpoint = (intersectionPoints[0] + intersectionPoints[1]) / 2.0f;
+            sf::CircleShape collisionCircle1(5);
+            sf::CircleShape collisionCircle2(5);
+            collisionCircle1.setFillColor(sf::Color::Blue);
+            collisionCircle1.setPosition(intersectionPoints[0] - sf::Vector2f(5, 5)); 
+            collisionCircle2.setPosition(intersectionPoints[1] - sf::Vector2f(5, 5));
+            collisionCircle2.setFillColor(sf::Color::Blue);
+            window.draw(collisionCircle1);
+            window.draw(collisionCircle2);
+        }
+
         window.display();
     }
 

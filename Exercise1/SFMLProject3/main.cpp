@@ -42,7 +42,7 @@ float DotProduct(sf::Vector2f _vector1, sf::Vector2f _vector2) {
 }
 EPlaneResult PlaneEquation(Plane _plane, sf::Vector2f _pointToCheck) {
     float fDistance = DotProduct(_plane.normal, _plane.pointOnPlane);
-    float fDot = DotProduct(_plane.normal, _pointToCheck)-fDistance;
+    float fDot = DotProduct(_plane.normal, _pointToCheck) - fDistance;
     if (fDot == 0) return EPlaneResult::ON_PLANE;
     if (fDot < 0) return EPlaneResult::BEHIND;
 
@@ -53,7 +53,7 @@ int main()
 {
     //Create the window with a set resolution:
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML Project");
-    
+
     //Creating a convex shape:
     sf::ConvexShape Triangle;
     Triangle.setPointCount(3);
@@ -61,7 +61,7 @@ int main()
     Triangle.setPoint(1, sf::Vector2f(840.0f, 500.0f));
     Triangle.setPoint(2, sf::Vector2f(440.0f, 500.0f));
     Triangle.setFillColor(sf::Color::Green);
-    
+
     LineSegment CurrentLine;
     Plane CurrentPlane;
 
@@ -83,8 +83,8 @@ int main()
                     CurrentLine.start.position.x = sf::Mouse::getPosition(window).x;
                     CurrentLine.start.position.y = sf::Mouse::getPosition(window).y;
                     bLinePlaced = true;
-                } 
-                else if (!bPlanePlaced){
+                }
+                else if (!bPlanePlaced) {
                     sf::Vector2f PlaneDirection(CurrentLine.start.position - CurrentLine.end.position);
                     sf::Vector2f PlaneNormal(-PlaneDirection.y, PlaneDirection.x);
                     PlaneNormal = Normalize(PlaneNormal);
@@ -119,17 +119,17 @@ int main()
         if (bLinePlaced && !bPlanePlaced) {
             CurrentLine.end.position.x = sf::Mouse::getPosition(window).x;
             CurrentLine.end.position.y = sf::Mouse::getPosition(window).y;
-         
+
         }
         window.clear();
         //Do all your drawing in here/////
 
-        if (bLinePlaced ) {
+        if (bLinePlaced) {
             sf::Vertex LineToDraw[] = { CurrentLine.start, CurrentLine.end };
-            window.draw(LineToDraw,2,sf::Lines);
+            window.draw(LineToDraw, 2, sf::Lines);
         }
-     
-        
+
+
 
         //////////////////////////////////
         window.display();
