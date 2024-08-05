@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <cmath>
+#include <vector>
 
 struct Point {
     sf::Vertex vert;
@@ -145,6 +146,7 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML Project");
 
     Plane CurrentPlane;
+    std::vector<Plane> PlaneVector;
     Triangle CurrentTriangle;
 
     bool bCollisionChecked = false;
@@ -158,11 +160,13 @@ int main() {
                 window.close();
                 break;
             case sf::Event::MouseButtonPressed:
-                if (!CurrentPlane.bPointPlaced || !CurrentPlane.bPlanePlaced) {
-                    CurrentPlane.placePlane(window, event);
+                if (!CurrentTriangle.bTrianglePlaced) {
+                    CurrentTriangle.placeTriangle(window, event); \
                 }
-                else if (!CurrentTriangle.bTrianglePlaced) {
-                    CurrentTriangle.placeTriangle(window, event);
+                else if (!CurrentPlane.bPointPlaced || !CurrentPlane.bPlanePlaced) {
+                   
+                   
+                    CurrentPlane.placePlane(window, event);
                     if (CurrentTriangle.bTrianglePlaced) {
                         bCollisionChecked = true;
                         intersectionPoints.clear();
@@ -175,6 +179,21 @@ int main() {
                         }
                     }
                 }
+                else {
+                    if (CurrentTriangle.bTrianglePlaced) {
+                        bCollisionChecked = true;
+                        intersectionPoints.clear();
+                        bool collision = TriangleIntersectsPlane(CurrentTriangle, CurrentPlane, intersectionPoints);
+                        if (collision) {
+                            std::cout << "Collision" << std::endl;
+                        }
+                        else {
+                            std::cout << "No Collision" << std::endl;
+                        }
+                    }
+                }
+         
+       
                 break;
             case sf::Event::KeyPressed:
                 if (event.key.code == sf::Keyboard::R) {
@@ -187,7 +206,11 @@ int main() {
                 break;
             }
         }
-
+        if (CurrentPlane.bPlanePlaced) {
+            PlaneVector.push_back(CurrentPlane);
+            Plane newPlane;
+            CurrentPlane = newPlane;
+        }
         window.clear();
 
         if (CurrentPlane.bPointPlaced && !CurrentPlane.bPlanePlaced) {
@@ -207,8 +230,12 @@ int main() {
             };
             window.draw(TriangleToDraw, 4, sf::LinesStrip);
         }
-
+       
         CurrentTriangle.drawPoints(window);
+        for (int i = 0; i < PlaneVector.size(); i++) {
+            PlaneVector[i].drawPlane(window);
+           
+        }
         CurrentPlane.drawPlane(window);
 
         if (bCollisionChecked && intersectionPoints.size() == 2) {
