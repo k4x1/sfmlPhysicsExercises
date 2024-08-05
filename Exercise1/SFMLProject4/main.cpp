@@ -2,26 +2,18 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <algorithm>
 
-struct Point {
-    sf::Vertex vert;
-    bool placed = false;
-};
 
-float DotProduct(sf::Vector2f _vector1, sf::Vector2f _vector2) {
-    return (_vector1.x * _vector2.x) + (_vector1.y * _vector2.y);
-}
 
 sf::Vector2f Normalize(sf::Vector2f _vector) {
     float Magnitude = sqrt((_vector.x * _vector.x) + (_vector.y * _vector.y));
     return sf::Vector2f(_vector.x / Magnitude, _vector.y / Magnitude);
 }
-
-sf::Vector2f LinePlaneIntersection(sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f planePoint, sf::Vector2f planeNormal) {
-    sf::Vector2f lineDir = p2 - p1;
-    float t = DotProduct(planeNormal, planePoint - p1) / DotProduct(planeNormal, lineDir);
-    return p1 + lineDir * t;
-}
+struct Point {
+    sf::Vertex vert;
+    bool placed = false;
+};
 class Plane {
 public:
     Plane() : pointOnPlane(), normal(), bPointPlaced(false), bPlanePlaced(false) {}
@@ -43,6 +35,9 @@ public:
                 bPlanePlaced = true;
             }
         }
+    }
+    sf::Color GenerateRandomColor() {
+        return sf::Color(rand() % 256, rand() % 256, rand() % 256);
     }
 
     void drawPlane(sf::RenderWindow& window) {
@@ -69,6 +64,32 @@ public:
     bool bPointPlaced;
     bool bPlanePlaced;
 };
+
+float DotProduct(sf::Vector2f _vector1, sf::Vector2f _vector2) {
+    return (_vector1.x * _vector2.x) + (_vector1.y * _vector2.y);
+}
+
+
+enum EPlaneResult {
+    ON_PLANE,
+    IN_FRONT,
+    BEHIND
+};
+EPlaneResult PlaneEquation(Plane _plane, sf::Vector2f _pointToCheck) {
+    float fDistance = DotProduct(_plane.normal, _plane.pointOnPlane);
+    float fDot = DotProduct(_plane.normal, _pointToCheck) - fDistance;
+    if (fDot == 0) return EPlaneResult::ON_PLANE;
+    if (fDot < 0) return EPlaneResult::BEHIND;
+
+    return EPlaneResult::IN_FRONT;
+
+}
+sf::Vector2f LinePlaneIntersection(sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f planePoint, sf::Vector2f planeNormal) {
+    sf::Vector2f lineDir = p2 - p1;
+    float t = DotProduct(planeNormal, planePoint - p1) / DotProduct(planeNormal, lineDir);
+    return p1 + lineDir * t;
+}
+
 
 class Triangle {
 public:
@@ -102,14 +123,51 @@ public:
             }
         }
     }
+    void sliceTriangle(std::vector<Triangle>& _triangleArray,  std::vector<sf::Vector2f>& _intersectionPoints, Plane& _plane) {
+        Triangle newTriangle;
+    
+        for (int i = 0; i < 3; ++i) {
+            if (!newTriangle.points[i].placed) {
+                if (i == 2) {
+                    std::vector<sf::Vector2f> inFront;
+                    std::vector<sf::Vector2f> behind;
+                    for (auto point : points) {
+                        
+                        switch (PlaneEquation(_plane, point.vert.position)) {
+                        case IN_FRONT:
+                            inFront.push_back(point.vert.position);
+                            break;
+                        case BEHIND:
+                            behind.push_back(point.vert.position);
+                            break;
+                        default:
+                            std::cout << "err" << std::endl;
+                            break;
 
+                        
+                        }
+ 
+                    }
+                    newTriangle.points[i].vert.position = inFront.size() < behind.size() ? inFront[0] : behind[0];
+                    
+                    
+                }
+                newTriangle.points[i].placed = true;
+                break;
+                newTriangle.points[i].vert.position = _intersectionPoints[i];
+                
+                break;
+            }
+        }
+        newTriangle.bTrianglePlaced = newTriangle.points[0].placed && newTriangle.points[1].placed && newTriangle.points[2].placed;
+    }
     void reset() {
         for (int i = 0; i < 3; ++i) {
             points[i].placed = false;
         }
         bTrianglePlaced = false;
     }
-
+    bool sliced = false;
     Point points[3];
     bool bTrianglePlaced;
 };
