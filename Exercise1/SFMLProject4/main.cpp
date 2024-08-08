@@ -3,6 +3,8 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+#include <cstdlib>
+#include <ctime>
 
 
 
@@ -97,7 +99,15 @@ public:
         for (int i = 0; i < 3; ++i) {
             points[i].placed = false;
         }
+        sf::Color newRandomColor(
+            std::rand() % 256, // Red
+            std::rand() % 256, // Green
+            std::rand() % 256  // Blue
+        );
+        randomColor = newRandomColor;
     }
+
+    sf::Color randomColor;
 
     void placeTriangle(sf::RenderWindow& window, sf::Event& event) {
         if (event.type == sf::Event::MouseButtonPressed) {
@@ -106,6 +116,7 @@ public:
                     points[i].vert.position.x = sf::Mouse::getPosition(window).x;
                     points[i].vert.position.y = sf::Mouse::getPosition(window).y;
                     points[i].placed = true;
+                    std::cout << points[i].vert.position.x << "|" << points[i].vert.position.y << std::endl;
                     break;
                 }
             }
@@ -118,21 +129,35 @@ public:
             if (points[i].placed) {
                 sf::CircleShape circle(5);
                 circle.setFillColor(sf::Color::Green);
-                circle.setPosition(points[i].vert.position - sf::Vector2f(5, 5)); 
+                circle.setPosition(points[i].vert.position - sf::Vector2f(5, 5));
                 window.draw(circle);
             }
         }
     }
-    void sliceTriangle(std::vector<Triangle>& _triangleArray,  std::vector<sf::Vector2f>& _intersectionPoints, Plane& _plane) {
-        Triangle newTriangle;
-    
-        for (int i = 0; i < 3; ++i) {
-            if (!newTriangle.points[i].placed) {
+
+    void DrawTriangle(sf::RenderWindow& window) {
+        if (bTrianglePlaced) {
+            sf::VertexArray triangle(sf::Triangles, 3);
+            for (int i = 0; i < 3; ++i) {
+                triangle[i].position = points[i].vert.position;
+                triangle[i].color = randomColor;
+            }
+            window.draw(triangle);
+        }
+    }
+
+    void sliceTriangle(std::vector<Triangle>& _triangleArray, std::vector<sf::Vector2f>& _intersectionPoints, Plane& _plane) {
+        Triangle newTriangle1;
+        Triangle newTriangle2;
+        Triangle newTriangle3;
+        std::vector<sf::Vector2f> base;
+        for (int i = 0; i < 3; i++) {
+            if (!newTriangle1.points[i].placed) {
+                newTriangle1.points[i].placed = true;
                 if (i == 2) {
                     std::vector<sf::Vector2f> inFront;
                     std::vector<sf::Vector2f> behind;
                     for (auto point : points) {
-                        
                         switch (PlaneEquation(_plane, point.vert.position)) {
                         case IN_FRONT:
                             inFront.push_back(point.vert.position);
@@ -143,30 +168,47 @@ public:
                         default:
                             std::cout << "err" << std::endl;
                             break;
-
-                        
                         }
- 
                     }
-                    newTriangle.points[i].vert.position = inFront.size() < behind.size() ? inFront[0] : behind[0];
-                    
-                    
+                    newTriangle1.points[i].vert.position = inFront.size() < behind.size() ? inFront[0] : behind[0];
+                    base = inFront.size() > behind.size() ? inFront : behind;
+                    std::cout << newTriangle1.points[i].vert.position.x << "|" << newTriangle1.points[i].vert.position.y << std::endl;
+                    continue;
                 }
-                newTriangle.points[i].placed = true;
-                break;
-                newTriangle.points[i].vert.position = _intersectionPoints[i];
-                
-                break;
+                newTriangle1.points[i].vert.position = _intersectionPoints[i];
+                std::cout << newTriangle1.points[i].vert.position.x << "|" << newTriangle1.points[i].vert.position.y << std::endl;
             }
         }
-        newTriangle.bTrianglePlaced = newTriangle.points[0].placed && newTriangle.points[1].placed && newTriangle.points[2].placed;
+        newTriangle1.bTrianglePlaced = newTriangle1.points[0].placed && newTriangle1.points[1].placed && newTriangle1.points[2].placed;
+        _triangleArray.push_back(newTriangle1);
+        std::cout << newTriangle1.points[0].placed << " | " << newTriangle1.points[1].placed << " | " << newTriangle1.points[2].placed << " | " << std::endl;
+
+        newTriangle2.points[0].vert.position = _intersectionPoints[0];
+        newTriangle2.points[1].vert.position = _intersectionPoints[1];
+        newTriangle2.points[2].vert.position = base[0];
+
+        newTriangle2.points[0].placed = true;
+        newTriangle2.points[1].placed = true;
+        newTriangle2.points[2].placed = true;
+        _triangleArray.push_back(newTriangle2);
+
+        newTriangle3.points[0].vert.position = base[0];
+        newTriangle3.points[1].vert.position = base[1];
+        newTriangle3.points[2].vert.position = _intersectionPoints[0];
+
+        newTriangle3.points[0].placed = true;
+        newTriangle3.points[1].placed = true;
+        newTriangle3.points[2].placed = true;
+        _triangleArray.push_back(newTriangle3);
     }
+
     void reset() {
         for (int i = 0; i < 3; ++i) {
             points[i].placed = false;
         }
         bTrianglePlaced = false;
     }
+
     bool sliced = false;
     Point points[3];
     bool bTrianglePlaced;
@@ -199,7 +241,6 @@ bool TriangleIntersectsPlane(Triangle triangle, Plane plane, std::vector<sf::Vec
     }
     return false;
 }
-
 int main() {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML Project");
 
@@ -209,6 +250,7 @@ int main() {
 
     bool bCollisionChecked = false;
     std::vector<sf::Vector2f> intersectionPoints;
+    std::vector<Triangle> slicedTriangles; // Vector to store resulting triangles after slicing
 
     while (window.isOpen()) {
         sf::Event event;
@@ -219,11 +261,9 @@ int main() {
                 break;
             case sf::Event::MouseButtonPressed:
                 if (!CurrentTriangle.bTrianglePlaced) {
-                    CurrentTriangle.placeTriangle(window, event); \
+                    CurrentTriangle.placeTriangle(window, event);
                 }
                 else if (!CurrentPlane.bPointPlaced || !CurrentPlane.bPlanePlaced) {
-                   
-                   
                     CurrentPlane.placePlane(window, event);
                     if (CurrentTriangle.bTrianglePlaced) {
                         bCollisionChecked = true;
@@ -231,6 +271,8 @@ int main() {
                         bool collision = TriangleIntersectsPlane(CurrentTriangle, CurrentPlane, intersectionPoints);
                         if (collision) {
                             std::cout << "Collision" << std::endl;
+                            // Call sliceTriangle function
+                            CurrentTriangle.sliceTriangle(slicedTriangles, intersectionPoints, CurrentPlane);
                         }
                         else {
                             std::cout << "No Collision" << std::endl;
@@ -244,14 +286,14 @@ int main() {
                         bool collision = TriangleIntersectsPlane(CurrentTriangle, CurrentPlane, intersectionPoints);
                         if (collision) {
                             std::cout << "Collision" << std::endl;
+                            // Call sliceTriangle function
+                            CurrentTriangle.sliceTriangle(slicedTriangles, intersectionPoints, CurrentPlane);
                         }
                         else {
                             std::cout << "No Collision" << std::endl;
                         }
                     }
                 }
-         
-       
                 break;
             case sf::Event::KeyPressed:
                 if (event.key.code == sf::Keyboard::R) {
@@ -259,6 +301,7 @@ int main() {
                     CurrentTriangle.reset();
                     bCollisionChecked = false;
                     intersectionPoints.clear();
+                    slicedTriangles.clear(); // Clear the sliced triangles
                     window.clear();
                 }
                 break;
@@ -278,21 +321,10 @@ int main() {
             };
             window.draw(PlaneToDraw, 2, sf::Lines);
         }
-
-        if (CurrentTriangle.bTrianglePlaced) {
-            sf::Vertex TriangleToDraw[] = {
-                CurrentTriangle.points[0].vert,
-                CurrentTriangle.points[1].vert,
-                CurrentTriangle.points[2].vert,
-                CurrentTriangle.points[0].vert
-            };
-            window.draw(TriangleToDraw, 4, sf::LinesStrip);
-        }
-       
+        CurrentTriangle.DrawTriangle(window);
         CurrentTriangle.drawPoints(window);
         for (int i = 0; i < PlaneVector.size(); i++) {
             PlaneVector[i].drawPlane(window);
-           
         }
         CurrentPlane.drawPlane(window);
 
@@ -301,11 +333,18 @@ int main() {
             sf::CircleShape collisionCircle1(5);
             sf::CircleShape collisionCircle2(5);
             collisionCircle1.setFillColor(sf::Color::Blue);
-            collisionCircle1.setPosition(intersectionPoints[0] - sf::Vector2f(5, 5)); 
+            collisionCircle1.setPosition(intersectionPoints[0] - sf::Vector2f(5, 5));
             collisionCircle2.setPosition(intersectionPoints[1] - sf::Vector2f(5, 5));
             collisionCircle2.setFillColor(sf::Color::Blue);
             window.draw(collisionCircle1);
             window.draw(collisionCircle2);
+        }
+
+        // Draw the resulting sliced triangles
+        for (auto& triangle : slicedTriangles) {
+         
+            triangle.DrawTriangle(window);
+            triangle.drawPoints(window);
         }
 
         window.display();
