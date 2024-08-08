@@ -148,9 +148,9 @@ public:
 
     void sliceTriangle(std::vector<Triangle>& _triangleArray, std::vector<sf::Vector2f>& _intersectionPoints, Plane& _plane) {
         Triangle newTriangle1;
-        Triangle newTriangle2;
-        Triangle newTriangle3;
+
         std::vector<sf::Vector2f> base;
+
         for (int i = 0; i < 3; i++) {
             if (!newTriangle1.points[i].placed) {
                 newTriangle1.points[i].placed = true;
@@ -172,25 +172,36 @@ public:
                     }
                     newTriangle1.points[i].vert.position = inFront.size() < behind.size() ? inFront[0] : behind[0];
                     base = inFront.size() > behind.size() ? inFront : behind;
-                    std::cout << newTriangle1.points[i].vert.position.x << "|" << newTriangle1.points[i].vert.position.y << std::endl;
+                    std::cout << "newTriangle1 point " << i << ": " << newTriangle1.points[i].vert.position.x << "|" << newTriangle1.points[i].vert.position.y << std::endl;
                     continue;
                 }
                 newTriangle1.points[i].vert.position = _intersectionPoints[i];
-                std::cout << newTriangle1.points[i].vert.position.x << "|" << newTriangle1.points[i].vert.position.y << std::endl;
+                std::cout << "newTriangle1 point " << i << ": " << newTriangle1.points[i].vert.position.x << "|" << newTriangle1.points[i].vert.position.y << std::endl;
             }
         }
         newTriangle1.bTrianglePlaced = newTriangle1.points[0].placed && newTriangle1.points[1].placed && newTriangle1.points[2].placed;
         _triangleArray.push_back(newTriangle1);
-        std::cout << newTriangle1.points[0].placed << " | " << newTriangle1.points[1].placed << " | " << newTriangle1.points[2].placed << " | " << std::endl;
+        std::cout << "newTriangle1 placed: " << newTriangle1.points[0].placed << " | " << newTriangle1.points[1].placed << " | " << newTriangle1.points[2].placed << std::endl;
 
+        if (base.size() < 2) {
+            std::cerr << "Error: base does not have enough points." << std::endl;
+            return;
+        }
+        Triangle newTriangle2;
+        Triangle newTriangle3;
         newTriangle2.points[0].vert.position = _intersectionPoints[0];
         newTriangle2.points[1].vert.position = _intersectionPoints[1];
-        newTriangle2.points[2].vert.position = base[0];
+        newTriangle2.points[2].vert.position = base[1];
 
         newTriangle2.points[0].placed = true;
         newTriangle2.points[1].placed = true;
         newTriangle2.points[2].placed = true;
+        newTriangle2.bTrianglePlaced = true;
         _triangleArray.push_back(newTriangle2);
+
+        std::cout << "newTriangle2 points: " << newTriangle2.points[0].vert.position.x << "|" << newTriangle2.points[0].vert.position.y << " / "
+            << newTriangle2.points[1].vert.position.x << "|" << newTriangle2.points[1].vert.position.y << "/ "
+            << newTriangle2.points[2].vert.position.x << "|" << newTriangle2.points[2].vert.position.y << std::endl;
 
         newTriangle3.points[0].vert.position = base[0];
         newTriangle3.points[1].vert.position = base[1];
@@ -199,8 +210,16 @@ public:
         newTriangle3.points[0].placed = true;
         newTriangle3.points[1].placed = true;
         newTriangle3.points[2].placed = true;
+        newTriangle3.bTrianglePlaced = true;
         _triangleArray.push_back(newTriangle3);
+
+        std::cout << "newTriangle3 points: " << newTriangle3.points[0].vert.position.x << "|" << newTriangle3.points[0].vert.position.y << " / "
+            << newTriangle3.points[1].vert.position.x << "|" << newTriangle3.points[1].vert.position.y << " / "
+            << newTriangle3.points[2].vert.position.x << "|" << newTriangle3.points[2].vert.position.y << std::endl;
+
+        std::cout << "Total triangles: " << _triangleArray.size() << std::endl;
     }
+
 
     void reset() {
         for (int i = 0; i < 3; ++i) {
@@ -321,7 +340,16 @@ int main() {
             };
             window.draw(PlaneToDraw, 2, sf::Lines);
         }
-        CurrentTriangle.DrawTriangle(window);
+        if (CurrentTriangle.bTrianglePlaced) {
+            sf::Vertex TriangleToDraw[] = {
+                CurrentTriangle.points[0].vert,
+                CurrentTriangle.points[1].vert,
+                CurrentTriangle.points[2].vert,
+                CurrentTriangle.points[0].vert
+
+            };
+            window.draw(TriangleToDraw, 4, sf::LinesStrip);
+        }
         CurrentTriangle.drawPoints(window);
         for (int i = 0; i < PlaneVector.size(); i++) {
             PlaneVector[i].drawPlane(window);
@@ -343,6 +371,7 @@ int main() {
         // Draw the resulting sliced triangles
         for (auto& triangle : slicedTriangles) {
          
+            
             triangle.DrawTriangle(window);
             triangle.drawPoints(window);
         }
