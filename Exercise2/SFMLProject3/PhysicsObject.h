@@ -14,7 +14,6 @@ public:
 	void UpdatePhysics();
 	void SetMass(float _mass);
 	void CollideObject(sf::RenderWindow& _window);
-	void ApplyDrag(float _dragCoefficient);
 	float GetMass();
 	float GetRadius();
 	sf::Vector2f GetPosition();

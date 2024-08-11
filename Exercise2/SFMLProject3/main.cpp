@@ -8,7 +8,6 @@
 
 #include "PhysicsObject.h"
 #include "PhysicsLibrary.h"
-#include "Liquid.h"
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML Project");
@@ -18,9 +17,7 @@ int main() {
 
     std::vector<PhysicsObject*> PhysicsObjects;
 
-    Liquid* liquid = new Liquid(sf::Vector2f(0, 360), sf::Vector2f(1280, 360), 0.1f);
     PhysicsObject* CurrentObject = new PhysicsObject(sf::Vector2f(640,360),1);
-
     bool bApplyingWind = false;
     bool bCreatingObject = false;
     while (window.isOpen()) 
@@ -43,9 +40,6 @@ int main() {
                 else if (event.mouseButton.button == sf::Mouse::Right)
                 {
                     bApplyingWind = true;
-                    for (auto obj : PhysicsObjects) {
-                        obj->ApplyForce(sf::Vector2f(0, -1000)); 
-                    }
                 }
                 break;
             case sf::Event::MouseButtonReleased:
@@ -69,9 +63,8 @@ int main() {
         window.clear();
         for (auto obj : PhysicsObjects) {
             obj->ApplyForce(g_Gravity * obj->GetMass());
-         
-            if (liquid->Contains(obj->GetPosition())) {
-                obj->ApplyDrag(liquid->dragCoefficient);
+            if (bApplyingWind) {
+                obj->ApplyForce(sf::Vector2f(10.0f, 0));
             }
             obj->UpdatePhysics();
             obj->CollideObject(window);
@@ -81,7 +74,7 @@ int main() {
             window.draw(CircleShape);
         }
     
-        liquid->Render(window);
+      
 
         window.display();
     }
