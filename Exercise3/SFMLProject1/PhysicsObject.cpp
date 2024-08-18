@@ -16,6 +16,11 @@
         Acceleration += (_force / Mass) / 60.0f;
     }
 
+    void PhysicsObject::ApplyImpulse(sf::Vector2f _impulse)
+    {
+        Acceleration += (_impulse / Mass);
+    }
+
     void PhysicsObject::UpdatePhysics()
     {
         Velocity += Acceleration;
@@ -88,10 +93,10 @@
 
             // Check all combinations of points and lines
             sf::Vector2f vectors[4] = {
-                VectorToLine(StartPosition, other->GetStartPosition(), other->GetEndPosition()),
-                VectorToLine(EndPosition, other->GetStartPosition(), other->GetEndPosition()),
-                VectorToLine(other->GetStartPosition(), StartPosition, EndPosition),
-                VectorToLine(other->GetEndPosition(), StartPosition, EndPosition)
+                -VectorToLine(StartPosition, other->GetStartPosition(), other->GetEndPosition()),
+                -VectorToLine(EndPosition, other->GetStartPosition(), other->GetEndPosition()),
+                VectorToLine(other->GetStartPosition(), GetStartPosition(), GetEndPosition()),
+                VectorToLine(other->GetEndPosition(), GetStartPosition(), GetEndPosition())
             };
 
             for (int i = 0; i < 4; i++)
@@ -107,20 +112,24 @@
             float combinedRadii = GetRadius() + other->GetRadius();
             if (shortestDistance < combinedRadii)
             {
+                float impulse = 1.0f;
                 // Collision response
-                sf::Vector2f collisionNormal = Normalize(shortestVector);
-                sf::Vector2f penetrationVector = collisionNormal * (combinedRadii - shortestDistance);
+                sf::Vector2f pushVector = Normalize(shortestVector);
+                float midDistnce = combinedRadii - shortestDistance;
+                pushVector *= midDistnce;
 
                 // Separate the objects
-                StartPosition += penetrationVector / 2.0f;
-                EndPosition += penetrationVector / 2.0f;
-                other->StartPosition -= penetrationVector / 2.0f;
-                other->EndPosition -= penetrationVector / 2.0f;
+                StartPosition += pushVector;
+                EndPosition += pushVector;
+                /*other->StartPosition -= penetrationVector / 2.0f;
+                other->EndPosition -= penetrationVector / 2.0f;*/
 
-                // Invert velocities
-                Velocity = -Velocity;
-                other->Velocity = -other->Velocity;
+                // Apply impulse
+                ApplyImpulse(Normalize(pushVector) * impulse);
+                other->ApplyImpulse(Normalize(pushVector) * -impulse);
+
             }
+                
         }
     }
 

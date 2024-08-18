@@ -8,73 +8,77 @@
 
 #include "PhysicsObject.h"
 #include "PhysicsLibrary.h"
+#include "Triangle.h"
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML Project");
     window.setFramerateLimit(60);
-    sf::CircleShape CircleShape(50.0f);
-    CircleShape.setFillColor(sf::Color::Green);
 
     std::vector<PhysicsObject*> PhysicsObjects;
 
-    PhysicsObject* CurrentObject = new PhysicsObject(sf::Vector2f(640,360),1);
-    bool bApplyingWind = false;
-    bool bCreatingObject = false;
-    while (window.isOpen()) 
-    {
+    // Create a fixed triangle
+    Triangle triangle(sf::Vector2f(400, 300), sf::Vector2f(500, 500), sf::Vector2f(300, 500));
 
+    // Create physics objects
+    for (int i = 0; i < 10; i++) {
+        float startX = rand() % (window.getSize().x - 400) + 200;
+        float startY = rand() % (window.getSize().y - 400) + 200;
+
+        float endX = startX + (rand() % 200) - 100;
+        float endY = startY + (rand() % 200) - 100;
+        PhysicsObject* obj = new PhysicsObject(sf::Vector2f(startX, startY), sf::Vector2f(endX, endY), rand() % 4 + 1);
+        PhysicsObjects.push_back(obj);
+    }
+
+    while (window.isOpen()) {
         sf::Event event;
-        while (window.pollEvent(event))
-        {
-            switch (event.type)
-            {
-            case sf::Event::Closed:
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed)
                 window.close();
-                break;
-            case sf::Event::MouseButtonPressed:
-                if (event.mouseButton.button == sf::Mouse::Left) {
-                    CurrentObject = new PhysicsObject((sf::Vector2f)sf::Mouse::getPosition(window), 1.0f);
-                    PhysicsObjects.push_back(CurrentObject);
-                    bCreatingObject = true;
-                }
-                else if (event.mouseButton.button == sf::Mouse::Right)
-                {
-                    bApplyingWind = true;
-                }
-                break;
-            case sf::Event::MouseButtonReleased:
-                if (event.mouseButton.button == sf::Mouse::Right)
-                {
-                    bApplyingWind = false;
-                }  
-                if (event.mouseButton.button == sf::Mouse::Left)
-                {
-                    bCreatingObject = false;
-                }
-                break;
-            }
-      
-        }
-  
-        if (bCreatingObject) {
-            CurrentObject->SetMass(CurrentObject->GetMass() + 2.0f / 60);
         }
 
-        window.clear();
+        window.clear(sf::Color::Black);
+
         for (auto obj : PhysicsObjects) {
             obj->ApplyForce(g_Gravity * obj->GetMass());
-            if (bApplyingWind) {
-                obj->ApplyForce(sf::Vector2f(10.0f, 0));
-            }
             obj->UpdatePhysics();
+            obj->CollideCapsules(PhysicsObjects);
             obj->CollideObject(window);
-            CircleShape.setPosition(obj->GetPosition());
-            CircleShape.setRadius(obj->GetRadius());
-            CircleShape.setOrigin(obj->GetRadius(), obj->GetRadius());
-            window.draw(CircleShape);
+
+            // Check for collision with the triangle
+            if (triangle.ContainsPoint(obj->GetStartPosition()) || triangle.ContainsPoint(obj->GetEndPosition())) {
+                sf::Vector2f center = (triangle.p1 + triangle.p2 + triangle.p3) / 3.0f;
+                sf::Vector2f force = obj->GetStartPosition() - center;
+                obj->ApplyImpulse(Normalize(force) * 10.0f);
+            }
+
+
+            // Draw the object
+            sf::CircleShape circleShape(obj->GetRadius());
+            circleShape.setFillColor(sf::Color::Green);
+            circleShape.setPosition(obj->GetStartPosition());
+            circleShape.setOrigin(obj->GetRadius(), obj->GetRadius());
+            window.draw(circleShape);
+
+            circleShape.setPosition(obj->GetEndPosition());
+            window.draw(circleShape);
+
+            sf::RectangleShape rectangleShape(sf::Vector2f(obj->GetLength(), obj->GetRadius() * 2));
+            rectangleShape.setFillColor(sf::Color::Green);
+            rectangleShape.setOrigin(0.0f, obj->GetRadius());
+            rectangleShape.setRotation(GetAngle(obj->GetEndPosition() - obj->GetStartPosition()));
+            rectangleShape.setPosition(obj->GetStartPosition());
+            window.draw(rectangleShape);
         }
-    
-      
+
+        // Draw the triangle
+        sf::ConvexShape convex;
+        convex.setPointCount(3);
+        convex.setPoint(0, triangle.p1);
+        convex.setPoint(1, triangle.p2);
+        convex.setPoint(2, triangle.p3);
+        convex.setFillColor(sf::Color::Blue);
+        window.draw(convex);
 
         window.display();
     }
@@ -82,6 +86,6 @@ int main() {
     for (auto iter : PhysicsObjects) {
         delete iter;
     }
-    
+
     return 0;
 }

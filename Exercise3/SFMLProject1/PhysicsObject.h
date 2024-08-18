@@ -15,6 +15,7 @@ public:
 	PhysicsObject(sf::Vector2f _startPosition, sf::Vector2f _endPosition, float _mass);
 
 	void ApplyForce(sf::Vector2f _force);
+	void ApplyImpulse(sf::Vector2f _impulse);
 	
 	void UpdatePhysics();
 	

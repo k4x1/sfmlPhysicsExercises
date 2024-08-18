@@ -34,7 +34,7 @@ inline float GetAngle(sf::Vector2f _vector)
 }
 inline sf::Vector2f VectorToLine(sf::Vector2f _point, sf::Vector2f _lineStart, sf::Vector2f _lineEnd)
 {
-	sf::Vector2f line = _lineStart - _lineEnd;
+	sf::Vector2f line = _lineEnd - _lineStart ;
 	float lineLength = GetVectorLength(line);
 	sf::Vector2f N = Normalize(line);
 	float t = DotProduct(_point - _lineStart, N);

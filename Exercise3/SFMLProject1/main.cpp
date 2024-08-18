@@ -78,8 +78,8 @@ int main() {
                 obj->ApplyForce(sf::Vector2f(10.0f, 0));
             }
             obj->UpdatePhysics();
-            obj->CollideObject(window);
             obj->CollideCapsules(PhysicsObjects);
+            obj->CollideObject(window);
             circleShape.setPosition(obj->GetStartPosition());
             circleShape.setRadius(obj->GetRadius());
             circleShape.setOrigin(obj->GetRadius(), obj->GetRadius());
