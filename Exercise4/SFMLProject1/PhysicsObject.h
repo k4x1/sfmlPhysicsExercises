@@ -1,3 +1,14 @@
+/*
+Bachelor of Software Engineering
+Media Design School
+Auckland
+New Zealand
+(c) 2024 Media Design School
+File Name : PhysicsObject.h
+Description : Header file for the PhysicsObject class, which manages physics properties and behaviors for game objects.
+Author : Kazuo Reis de Andrade
+Mail : kazuo.andrade@mds.ac.nz
+*/
 #pragma once
 
 #include "PhysicsLibrary.h"
@@ -16,7 +27,6 @@ public:
 
 	void AddForce(sf::Vector2f _force);
 
-	void ApplyResistance(float density);
 
 	void UpdatePhysics();
 

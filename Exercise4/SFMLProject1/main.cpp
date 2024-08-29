@@ -1,3 +1,15 @@
+/*
+Bachelor of Software Engineering
+Media Design School
+Auckland
+New Zealand
+(c) 2024 Media Design School
+File Name : main.cpp
+Description : Main file for a physics simulation using SFML, demonstrating spring-connected objects and user interaction.
+Author : Kazuo Reis de Andrade
+Mail : kazuo.andrade@mds.ac.nz
+*/
+ 
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include "PhysicsObject.h"
@@ -27,6 +39,7 @@ int main()
 {
     //Create the window with a set resolution:
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML Project");
+    window.setFramerateLimit(60);
 
     sf::CircleShape CircleShape(50.0f);
     CircleShape.setFillColor(sf::Color::Green);
@@ -41,7 +54,7 @@ int main()
     sf::Clock clock;
     sf::Clock fixedClock;
     float accumulator = 0.0f;
-    float fixedTimeStep = 1.0f;
+    float fixedTimeStep = 1.0f/60;
 
     bool bApplyWind = false;
     bool bMovingRope = false;
@@ -81,32 +94,24 @@ int main()
         }
 
         // Calculate elapsed time since last frame
-        float deltaTime = clock.restart().asSeconds();
-        accumulator += deltaTime;
+    
 
-        // FixedUpdate loop
-        if (accumulator >= fixedTimeStep)
+        for (auto Spring : Springs)
         {
-            accumulator -= fixedTimeStep;
-
-            float fixedDeltaTime = fixedClock.restart().asSeconds();
-
-            for (auto Spring : Springs)
-            {
-                Spring->FixedUpdate();
-            }
-            for (auto Object : Objects)
-            {
-                Object->AddForce(g_Gravity * Object->GetMass() * fixedDeltaTime);
-                if (bApplyWind)
-                {
-                    Object->AddForce(sf::Vector2f(10.0f * fixedDeltaTime, 0.0f));
-                }
-
-                Object->UpdatePhysics();
-                Object->CollideObject(window);
-            }
+            Spring->Simulate();
         }
+        for (auto Object : Objects)
+        {
+            Object->AddForce(g_Gravity * Object->GetMass());
+            if (bApplyWind)
+            {
+                Object->AddForce(sf::Vector2f(1.0f, 0.0f));
+            }
+
+            Object->UpdatePhysics();
+            Object->CollideObject(window);
+        }
+        
 
         if (bMovingRope)
         {
@@ -134,6 +139,10 @@ int main()
     }
 
     for (auto iter : Objects)
+    {
+        delete iter;
+    }
+    for (auto iter : Springs)
     {
         delete iter;
     }

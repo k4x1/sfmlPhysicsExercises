@@ -1,3 +1,15 @@
+/*
+Bachelor of Software Engineering
+Media Design School
+Auckland
+New Zealand
+(c) 2024 Media Design School
+File Name : PhysicsLibrary.h
+Description : Header file containing physics-related constants and utility functions for vector operations and conversions.
+Author : Kazuo Reis de Andrade
+Mail : kazuo.andrade@mds.ac.nz
+*/
+
 #pragma once
 
 #define _USE_MATH_DEFINES
@@ -8,7 +20,7 @@
 const inline sf::Vector2f g_Gravity = { 0.0f, 9.81f };
 const inline float g_MoveScale = 50.0f;
 const inline float g_MassSizeScale = 20.0f;
-const inline float g_FrictionCoefficient = 50.0f;
+const inline float g_FrictionCoefficient = 1.0f;
 const inline float g_DragCoefficient = 50.0f;
 inline float GetVectorLength(sf::Vector2f _vector)
 {

@@ -1,3 +1,14 @@
+/*
+Bachelor of Software Engineering
+Media Design School
+Auckland
+New Zealand
+(c) 2024 Media Design School
+File Name : PhysicsObject.cpp
+Description : Implementation file for the PhysicsObject class, which manages physics properties and behaviors for game objects.
+Author : Kazuo Reis de Andrade
+Mail : kazuo.andrade@mds.ac.nz
+*/
 #include "PhysicsObject.h"
 
 PhysicsObject::PhysicsObject(sf::Vector2f _position, float _mass)
@@ -12,31 +23,14 @@ PhysicsObject::~PhysicsObject()
 
 void PhysicsObject::AddForce(sf::Vector2f _force)
 {
-	Acceleration += (_force / Mass);
+	Acceleration += (_force / Mass)/60.0f;
 }
 
-void PhysicsObject::ApplyResistance(float density)
-{
-	// Calculate the speed of the PhysicsObject
-	float speed = GetVectorLength(Velocity);
-
-	// Calculate the normalized direction of the velocity (opposite for drag)
-	sf::Vector2f dragDirection = NormalizeVector(-Velocity);
-
-	// Calculate the drag force magnitude
-	float dragMagnitude = density * g_DragCoefficient * speed * speed;
-
-	// Calculate the drag force vector
-	sf::Vector2f DragForce = dragDirection * dragMagnitude;
-
-	// Apply the drag force to the PhysicsObject
-	AddForce(DragForce );
-}
 
 void PhysicsObject::UpdatePhysics()
 {
 	Velocity += Acceleration;
-	Position += Velocity * g_MoveScale;
+	Position += Velocity * g_MoveScale / 60.0f;
 	Acceleration = { 0.0f, 0.0f };
 }
 
