@@ -33,7 +33,7 @@ void PhysicsObject::CollideObject(sf::RenderWindow& _window)
 
         if (Velocity.x != 0 || Velocity.y != 0) {
             sf::Vector2f velocityUnitVector = Normalize(Velocity);
-            sf::Vector2f frictionForce = -velocityUnitVector * g_FrictionCoefficient;     
+            sf::Vector2f frictionForce = -velocityUnitVector * 0.45f;     
       //      std::cout <<"x: " << Velocity.x << " | y:" << Velocity.y << std::endl;
             Velocity.y = -(Velocity + frictionForce).y;
         }
