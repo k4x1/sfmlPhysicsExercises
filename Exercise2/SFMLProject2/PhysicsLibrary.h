@@ -10,6 +10,3 @@ inline sf::Vector2f Normalize(sf::Vector2f _vector) {
 	float Magnitude = GetVectorLength(_vector);	
 	return _vector / Magnitude;
 }
-class PhysicsLibrary {
-
-};

@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{EFC22825-ABCC-45BA-B8AA-54C76B0AEFE4}</ProjectGuid>
+    <ProjectGuid>{D2072095-0687-4B41-96B9-12B2DF2DD266}</ProjectGuid>
     <RootNamespace>SFMLSetup</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>Ex3</ProjectName>

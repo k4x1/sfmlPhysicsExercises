@@ -66,7 +66,7 @@ int main() {
             if (bApplyingWind) {
                 obj->ApplyForce(sf::Vector2f(10.0f, 0));
             }
-            obj->UpdatePhysics();
+            obj->UpdatePhysics(window);
             obj->CollideObject(window);
             CircleShape.setPosition(obj->GetPosition());
             CircleShape.setRadius(obj->GetRadius());

@@ -19,7 +19,7 @@ private:
 	class PhysicsObject* ObjectA = nullptr;
 	PhysicsObject* ObjectB = nullptr;
 
-	float restLength = 0.0f;
+	float restLength = 5.0f;
 public:
 	Spring(class PhysicsObject* _objectA, PhysicsObject* _objectB);
 

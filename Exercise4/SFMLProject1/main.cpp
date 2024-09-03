@@ -51,11 +51,6 @@ int main()
     std::vector<Spring*> Springs;
     CreateSpringRope(Objects, Springs);
 
-    sf::Clock clock;
-    sf::Clock fixedClock;
-    float accumulator = 0.0f;
-    float fixedTimeStep = 1.0f/60;
-
     bool bApplyWind = false;
     bool bMovingRope = false;
     while (window.isOpen())

@@ -36,10 +36,10 @@ void Spring::Simulate()
 	
 	float distanceDifference = distance - restLength;
 
-	float rigidity = 20.0f;
+	float rigidity = 10.0f;
 	sf::Vector2f force = nDisplacement * rigidity * distanceDifference;
 
-	float damping = 0.9f;
+	float damping = 3.0f;
 	float dotForceA = DotProduct(ObjectA->GetVelocity(), nDisplacement);
 	float dotForceB = DotProduct(ObjectB->GetVelocity(), -nDisplacement);
 	sf::Vector2f dampingForceA = dotForceA * nDisplacement * damping;
